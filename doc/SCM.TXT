@@ -72,7 +72,7 @@ docker tag cpp_gcc_tesseracet_docker apereznwogmail/cpp_gcc_tesseracet_docker:la
 docker login
 
 # 3. Push the image to the remote registry
-git 
+docker push apereznwogmail/cpp_gcc_tesseracet_docker:latest
 
 //////////////////////////////////////////////////////
 // render  / chronjob

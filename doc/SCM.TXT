@@ -2,6 +2,17 @@
 				"SCM"
 ////////////////////////////////////////////////////////////////
 
+1) TOOL CHAIN : C:\msys64\ucrt64\bin (CAMBIAR PATH=)
+
+2) MSYS 
+ 
+pacman -S mingw-w64-x86_64-toolchain
+pacman -S mingw-w64-x86_64-tesseract
+pacman -S mingw-w64-x86_64-tesseract-data-eng
+
+3) COMPILATION EXAMPLE
+
+g++ -std=c++17 -O3 your_program.cpp -o app.exe $(pkg-config --cflags --libs tesseract lept)
 
 ////////////////////////////////////////////////////////////////
 // GIT -- INITIAL CONFIG
@@ -10,7 +21,7 @@
 echo "# CPP_GCC_TESSERACT_DOCKER" >> README.md
 git init
 git add README.md
-git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.1]" -m"1) IMPORT FROM CPP_GCC_TESSERACT"
+git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.2]" -m"1) IMPORT FROM CPP_GCC_TESSERACT"
 git branch -M main
 git remote add origin https://github.com/aperezNWO/CPP_GCC_TESSERACT_DOCKER.git
 git push -u origin main 

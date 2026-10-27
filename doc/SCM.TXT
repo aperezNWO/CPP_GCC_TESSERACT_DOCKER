@@ -10,7 +10,7 @@
 echo "# CPP_GCC_TESSERACT_DOCKER" >> README.md
 git init
 git add README.md
-git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.0]" -m"1) first commit"
+git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.1]" -m"1) IMPORT FROM CPP_GCC_TESSERACT"
 git branch -M main
 git remote add origin https://github.com/aperezNWO/CPP_GCC_TESSERACT_DOCKER.git
 git push -u origin main 
@@ -81,7 +81,7 @@ git
 ////////////////////////////////////////////////////////////////
 
 git add * 
-git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.1]" -m"1) CppWebServer.cpp main file / Docker file"
+git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.2]" -m"1) IMPORT FROM CPP_GCC_TESSERACT"
 git push
 git pull	
 

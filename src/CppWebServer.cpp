@@ -1,24 +1,29 @@
 /*
 
     // WINDOWS
-    g++ -std=c++17 -O3 CppWebServer.cpp -I. TFileManager.cpp Dijkstra.cpp SortBenchMark.cpp  Sudoku.cpp RegExManager.cpp -o cpp_web_server.exe -mconsole -lws2_32
- 
+  
+    g++ -std=c++23 -shared -static -static-libgcc -static-libstdc++ -o tesseract.exe tesseractDll.cpp Algorithm.cpp -I"include"  -L"lib" -ltesseract55 -lleptonica              -lcurl -larchive -ltiff -lwebp -lsharpyuv -lgif -lopenjp2 -lssl -lcrypto -lpng -ljpeg -lz -lbz2 -llzma -llz4 -lzstd -lws2_32 -lbcrypt -lcrypt32 -Wl,--subsystem,windows -m64 
+
     g++ -std=c++17 -O3 CppWebServer.cpp -o cpp_web_server.exe -mconsole -lws2_32
+
+    g++ -std=c++23  -static -static-libgcc -static-libstdc++ -o cpp_web_server.exe CppWebServer.cpp Algorithm.cpp tesseractDll.cpp -I"include"  -L"lib" -ltesseract55 -lleptonica              -lcurl -larchive -ltiff -lwebp -lsharpyuv -lgif -lopenjp2 -lssl -lcrypto -lpng -ljpeg -lz -lbz2 -llzma -llz4 -lzstd -lws2_32 -lbcrypt -lcrypt32 -mconsole -m64 
     
     // LINUX -- DOCKER (NO .EXE EXTENSION FOR DOCKER!!!)
     	// EDIT DOCKER FILE TO ADD NEEDED FILES
-     		 COPY --from=builder /app/cdcatalog.xml /app/cdcatalog.xml  	
+	
    			 COPY --from=builder /app/Algorithm.ini /app/Algorithm.ini
 			 COPY --from=builder /app/cpp_web_server /app/cpp_web_server
         // COPY C++ COMMAND TO DOCKER FILE	
 			 RUN  <COMMAND_LINE>		 
-        g++ -std=c++17 -O3 CppWebServer.cpp -I. TFileManager.cpp Dijkstra.cpp SortBenchMark.cpp  Sudoku.cpp RegExManager.cpp -o cpp_web_server -lpthread 
-
         g++ -std=c++17 -O3 CppWebServer.cpp -I.  -o cpp_web_server -lpthread 
+
+        g++ -std=c++23 -O3 CppWebServer.cpp Algorithm.cpp tesseractDll.cpp -I. -Iinclude -o cpp_web_server -lpthread -ltesseract -llept
 
 */
 
 #include "httplib.h"
+#include "include/tesseractApp.h"
+#include "include/Algorithm.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -39,7 +44,10 @@ std::unordered_map<std::string, EndpointInfo> endpointDictionary = {
     {"PING_ENDPOINT"              , {"/zero"                       , "Render workaround"}},
     {"APP_VERSION_ENDPOINT"       , {"/getAppVersion"              , "Get Application Version"}},
     {"STD_VERSION_ENDPOINT"       , {"/getSTDVersion"              , "Get Standard C++ Version"}},
-    {"SERVER_VERSION_ENDPOINT"    , {"/getServerVersion"           , "Get Http Server Version"}}
+    {"SERVER_VERSION_ENDPOINT"    , {"/getServerVersion"           , "Get Http Server Version"}},
+    {"TESSERACT_VERSION_ENDPOINT"    , {"/api/ocr/getAPIVersion"   , "Get Tesseract API Version"}},
+    {"TESSERACT_UPLOAD_ENDPOINT"     , {"/api/ocr/upload"          , "Upload image from html form via HTTP POST"}},    
+    {"TESSERACT_OCR_IMAGE_ENDPOINT"  , {"/api/ocr/getImage"        , "UNITARY TEST"}},       
 };
 
 //
@@ -184,11 +192,23 @@ int main(int argc, char* argv[]) {
     svr.Get(endpointDictionary["APP_VERSION_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
     	
     		//
-			ReadConfigFile("Algorithm.ini");
+			ReadConfigFile("tesseract.ini");
 
 			//
     		std::string jsonResponse  = configMap["DLL_VERSION"]; 
     		
+    		//
+            res.set_content(jsonResponse, "application/json");
+            res.status = 200;
+    });
+    
+    
+    // Get API Version
+    svr.Get(endpointDictionary["TESSERACT_VERSION_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
+  		  	//
+		    std::unique_ptr<TesseractApp> uniquePtr = std::make_unique<TesseractApp>();
+			//
+    		std::string jsonResponse  = uniquePtr->GetTesseractVersion(); 
     		//
             res.set_content(jsonResponse, "application/json");
             res.status = 200;
@@ -201,6 +221,43 @@ int main(int argc, char* argv[]) {
             res.status = 200;
     });
     
+    // UNIT TEST 
+    svr.Get(endpointDictionary["TESSERACT_OCR_IMAGE_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
+    		
+	    //
+	    std::unique_ptr<TesseractApp> uniquePtr = std::make_unique<TesseractApp>();
+		
+		//
+		std::string jsonResponse  = uniquePtr->GetTesseractOcrOutput();
+        res.set_content(jsonResponse, "application/json");
+        res.status = 200;
+    });
+    
+	// UPLOAD IMAGE FROM HTML FORM VIA POST
+    svr.Post("TESSERACT_UPLOAD_ENDPOINT", [](const httplib::Request& req, httplib::Response& res) {
+	    if (req.body.empty()) {
+	        res.status = 400;
+	        res.set_content("{\"error\": \"No image data received\"}", "application/json");
+	        return;
+	    }
+	
+	    // req.body holds the raw binary bytes of the uploaded image
+	    std::string savedPath = "/app/uploaded_image.png"; 
+	    std::ofstream outfile(savedPath, std::ios::binary);
+	    outfile.write(req.body.data(), req.body.size());
+	    outfile.close();
+	
+	    // Pass savedPath using .c_str() to match const char*
+	    std::unique_ptr<TesseractApp> uniquePtr = std::make_unique<TesseractApp>();
+	    
+	    // Convert std::string to const char* via .c_str() and capture result
+	    std::string jsonResponse = uniquePtr->GetTesseractOcrOutputPath(savedPath.c_str());
+	    
+        res.set_content(jsonResponse, "application/json");
+        res.status = 200;
+	});
+	
+	//
     int port = 8080;
     if (getenv("PORT")) {
         port = std::stoi(getenv("PORT"));

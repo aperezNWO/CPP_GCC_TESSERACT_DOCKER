@@ -20,7 +20,6 @@
 
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
-#include "Algorithm.h"
 
 #define DLL_EXPORT extern "C" __declspec(dllexport) __stdcall
 
@@ -30,8 +29,7 @@ using namespace std;
 #pragma argsused
 #pragma once
 
-class TesseractApp :
-   public Algorithm
+class TesseractApp 
 {
    public :
         //

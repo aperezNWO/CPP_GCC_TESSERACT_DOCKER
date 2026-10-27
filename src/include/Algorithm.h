@@ -45,7 +45,7 @@ enum class FormatType {
 };
 
 //
-class ALGORITHM_API Algorithm
+class Algorithm
 {
 	   public :
 			//
@@ -57,7 +57,7 @@ class ALGORITHM_API Algorithm
 			static vector<string>              StringSplit(const char* p_inputString, std::string p_delimiter);
 			int                                ReadConfigFile(const char* fileName);
             static void                        ReplaceAll(std::string &str, const std::string &from, const std::string &to);
-            const char*                        _GetDLLVersion();
+            const char*                        GetDLLVersion();
             const char*                        GetCPPSTDVersion(long int cppVersion);
 	   public :
 		  //

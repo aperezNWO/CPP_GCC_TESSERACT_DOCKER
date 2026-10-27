@@ -92,7 +92,7 @@ docker push apereznwogmail/cpp_gcc_tesseracet_docker:latest
 ////////////////////////////////////////////////////////////////
 
 git add * 
-git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.2]" -m"1) IMPORT FROM CPP_GCC_TESSERACT"
+git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.3]" -m"1) OCR ENDPOINTS"
 git push
 git pull	
 

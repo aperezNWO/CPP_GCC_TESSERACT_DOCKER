@@ -1,93 +1,11 @@
-﻿///////////////////////////////////////////////////////////////////////////
-// ALGORITHM.DLL
-///////////////////////////////////////////////////////////////////////////
-/*
-
-		-- [_] TOOLCHAIN :  "C:\msys64\ucrt64\bin\g++.exe"
-*/
-
-///////////////////////////////////////////////////////////////////////////
-// VISUAL STUDIO
-///////////////////////////////////////////////////////////////////////////
-/*
-	1) SELECCIONAR ARCHIVO *.CPP DLL
-	
-	2) TERMINAL > RUN BUILD TASK > (3) (DLL) C/C++: g++.exe build active file
-	3) SE GENERA ARCHIVO "ALGORITMO.DLL" STATIC DLL X64
-	4) DISTRIBUIR LOS SIGUIENTES ARCHIVOS  EN CARPETA "/_DIST":
-
-		a) Algorithm.dll
-		b) Algorithm.ini
-		c) cdCatalog.xml
-
-*/
-
-///////////////////////////////////////////////////////////
-// COMMAND LINE
-///////////////////////////////////////////////////////////
-/* 
-
-  // Algorithm.dll
- "C:\msys64\ucrt64\bin\g++.exe" -shared -static -static-libgcc -static-libstdc++ -fdiagnostics-color=always -g Algorithm.cpp include\Dijkstra.cpp include\RegExManager.cpp include\SortBenchMark.cpp include\Sudoku.cpp include\TFileManager.cpp -o Algorithm.dll -Iinclude -Wl,--subsystem,windows -DALGORITHM_EXPORTS -m64
- 
- // Algoritym.o 
- "C:\msys64\ucrt64\bin\g++.exe" -c Algorithm.cpp -o Algorithm.o -Iinclude -Wall -Wextra -fdiagnostics-color=always -g -m64 -DALGORITHM_EXPORTS
-
-// TFileManager.o
-"C:\msys64\ucrt64\bin\g++.exe" -c include\TFileManager.cpp -o TFileManager.o -Iinclude -Wall -Wextra -fdiagnostics-color=always -g -m64 -DALGORITHM_EXPORTS
-
-// RegexManager.o
-"C:\msys64\ucrt64\bin\g++.exe" -c include\RegExManager.cpp -o RegExManager.o -Iinclude -Wall -Wextra -fdiagnostics-color=always -g -m64 -DALGORITHM_EXPORTS
-
-// Sudoku.o
-"C:\msys64\ucrt64\bin\g++.exe" -c include\Sudoku.cpp -o Sudoku.o -Iinclude -Wall -Wextra -fdiagnostics-color=always -g -m64 -DALGORITHM_EXPORTS
- 
-// Dijkstra.o 
-"C:\msys64\ucrt64\bin\g++.exe" -c include\Dijkstra.cpp -o Dijkstra.o -Iinclude -Wall -Wextra -fdiagnostics-color=always -g -m64 -DALGORITHM_EXPORTS
-
-// SortBenchMark.o
-"C:\msys64\ucrt64\bin\g++.exe" -c include\SortBenchMark.cpp -o SortBenchMark.o -Iinclude -Wall -Wextra -fdiagnostics-color=always -g -m64 -DALGORITHM_EXPORTS
-
- // PUT TOGETHER IN A LIBALGORITHM.A FILE
- ar rcs libAlgorithm.a Algorithm.o TFileManager.o RegExManager.o Sudoku.o Dijkstra.o SortBenchMark.o
- 
- 
-*/
-///////////////////////////////////////////////////////////
-// MAKE
-///////////////////////////////////////////////////////////
-/* 
-
-mingw32-make --always-make --debug=v
-
-make.bat
-
-dumpbin /exports Algorithm.dll
-
-
-gcc version 15.1.0 (Rev1, Built by MSYS2 project)
-
-GCC 10.x and later : Default is C++17 .
-
-
-
-*/
-///////////////////////////////////////////////////////////
-
-#include "include\Algorithm.h"
-#include "include\Dijkstra.h"
-#include "include\SortBenchMark.h"
-#include "include\RegExManager.h"
-#include "include\Sudoku.cpp"
-
-
+﻿#include "include/Algorithm.h"
 
 	Algorithm::Algorithm(bool readConfigFile)
 	{
 		 //
 		 if (readConfigFile)
 		 {
-		 	this->ReadConfigFile("Algorithm.ini");
+		 	this->ReadConfigFile("tesseract.ini");
 		 }
 
 	}
@@ -220,7 +138,7 @@ GCC 10.x and later : Default is C++17 .
 		}
 	}
 	//
-	const char* Algorithm::_GetDLLVersion()
+	const char* Algorithm::GetDLLVersion()
 	{
 		//
 		return this->configMap["DLL_VERSION"].c_str();
@@ -240,180 +158,9 @@ GCC 10.x and later : Default is C++17 .
 	}
 
 	///////////////////////////////////////////////////////////////////////////
-	// ENTRY POINTS
+	// MAIN ENTRY POINT
 	///////////////////////////////////////////////////////////////////////////
 
-	// DIJKSTRA
-	DLL_EXPORT const char* Dijkstra_GenerateRandomVertex_CPP(int p_vertexSize, int p_sourcePoint)
-	{
-	    // Create a unique_ptr for Dijkstra
-	    std::unique_ptr<Dijkstra> uniquePtr = std::make_unique<Dijkstra>();
-	
-	    // Generate the response
-	    static std::string response; 
-		
-		response = uniquePtr->GetRandomPoints(p_vertexSize, p_sourcePoint);
-	
-	    // Return the pointer to the dynamically allocated memory
-	    return response.c_str();
-	}
-	// SORT BENCHMARK
-	DLL_EXPORT const char*  SortBenchMark_GetSort_CPP(int p_sortAlgoritm, const char* p_unsortedList)
-	{
-	    if (!p_unsortedList || !p_sortAlgoritm) {
-	        throw std::invalid_argument("Invalid input parameters");
-	    }
-	
-	    // Create SortBenchMark object on the stack
-	    FormatType format = FormatType::HTML; // HTML
-	    SortBenchMark benchmark(p_unsortedList, format);
-	
-	    // Perform sorting and store the result in a static string
-	    static std::string jsonResponse;
-	    jsonResponse = benchmark.GetSort(p_sortAlgoritm);
-	
-	    // Return the pointer to the static string
-	    return jsonResponse.c_str();
-	};
-	// SORT BENCHMARK
-	DLL_EXPORT const char* SortBenchMark_GetSort_CPP_JSON(int p_sortAlgoritm, const char* p_unsortedList)
-	{
-	    if (!p_unsortedList || !p_sortAlgoritm) {
-	        throw std::invalid_argument("Invalid input parameters");
-	    }
-	
-	    // Create SortBenchMark object on the stack
-	    FormatType format = FormatType::JSON; // JSON
-	    SortBenchMark benchmark(p_unsortedList, format);
-	
-	    // Perform sorting and store the result in a static string
-	    static std::string jsonResponse;
-	    jsonResponse = benchmark.GetSort(p_sortAlgoritm);
-	
-	    // Return the pointer to the static string
-	    return jsonResponse.c_str();
-	}
-	// REGULAR EXPRESSIONS
-	DLL_EXPORT const char*  RegExManager_RegExEval(char* p_tagSearch, char* p_textSearch)
-	{
-		//
-		std::unique_ptr<RegExManager> uniquePtr = std::make_unique<RegExManager>();
-		//
-		static std::string response; 
-		response  = uniquePtr->RegExEval(p_tagSearch, p_textSearch);
-		
-		//
-		return response.c_str();
-	}
-	// SUDOKU
-	DLL_EXPORT const char*  Sudoku_Generate_CPP()
-	{
-		//
-		const static int   N = 9;
-		int                K = 20;
 
-		//
-		std::unique_ptr<SudokuGenerator> uniquePtr = std::make_unique<SudokuGenerator>(N, K);
-		string           str_matrix                = uniquePtr->Run();
-
-		//
-		return str_matrix.c_str();
-	}
-	// SUDOKU
-	DLL_EXPORT const char*  Sudoku_Solve_CPP(char* p_matrix)
-	{
-	    //
-		Algorithm*   algorithm     = new Algorithm(false);
-		string       str_p_matrix  = p_matrix;
-		FileManager* fileManager   = new FileManager();
-
-		//
-		std::map<std::string, std::string> replaceMap;
-
-		// Inserting values into the map
-		replaceMap["["]      = "";
-		replaceMap["]"]      = "";
-		replaceMap["},"]     = "|";
-		replaceMap["{"]      = "";
-		//replaceMap["}"]      = "";  // ERROR EN ESTE REEMPLAZO
-		// SE DEBE REEMPLAZAR ESPECIFICMENTE MAS ABAJO
-
-		// Iterating through the map
-		for (const auto& pair : replaceMap) {
-			//
-			algorithm->ReplaceAll(str_p_matrix, pair.first, pair.second);
-		}
-		//
-		algorithm->ReplaceAll(str_p_matrix, "}", "");
-
-		//
-		const char* str_p_matrix_c_str     = str_p_matrix.c_str();
-		//fileManager->SaveLineToFile("\nSudoku To Solve\n","SudokuGenerated.txt");
-
-		//
-		const static int   N          = 9;
-		int                grid[N][N] =
-			{
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1},
-				{-1, -1, -1, -1, -1, -1, -1, -1, -1} 
-			};
-
-		//
-		vector<string>   str_p_matrix_rows = algorithm->StringSplit(str_p_matrix_c_str,"|");
-		//
-		int i = 0;
-		//
-		for (string row : str_p_matrix_rows) {
-			//
-			//fileManager->SaveLineToFile(row,"SudokuGenerated.txt");
-			//
-			int j = 0;
-			//				
-			vector<string>   str_p_matrix_cols = algorithm->StringSplit(row.c_str(),",");
-			//
-			for (string col : str_p_matrix_cols) {
-				//
-				int num = stoi(col);
-				//
-				grid[i][j] = num;
-				//
-				j++;	
-			}
-			//
-			i++;
-		}
-
-		//
-		std::unique_ptr<SudokuSolver> uniquePtrSolve = std::make_unique<SudokuSolver>();
-		string           str_matrix                  = uniquePtrSolve->Solve(grid);
-
-		//
-		//fileManager->SaveLineToFile("\nSudoku Solved \n","SudokuSolved.txt");
-		//
-		return str_matrix.c_str();
-	}
-	// APP_VERSION
-	DLL_EXPORT const char* GetDLLVersion()
-	{
-		//
-		std::unique_ptr<Algorithm> uniquePtr = std::make_unique<Algorithm>(true);
-		//
-		return uniquePtr->_GetDLLVersion();
-	}
-
-	// C++ VERSION
-	DLL_EXPORT const char* GetCPPSTDVersion()
-	{
-		Algorithm *algorithm = new Algorithm(false);
-		
-		return algorithm->GetCPPSTDVersion(__cplusplus);	
-	}
 
 	///////////////////////////////////////////////////////////////////////////

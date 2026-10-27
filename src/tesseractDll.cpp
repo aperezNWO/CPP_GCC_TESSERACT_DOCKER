@@ -23,12 +23,12 @@
 // COMMAND LINE COMPILE (static)
 
 	// original
-	
+
 	g++ -shared -static -static-libgcc -static-libstdc++ -o tesseract.dll tesseractApp.cpp -I"C:/Users/pablo.perez/dev/cpp/_install/vcpkg_ucrt64/installed/x64-mingw-static/include"  -L"C:/Users/pablo.perez/dev/cpp/_install/vcpkg_ucrt64/installed/x64-mingw-static/lib"    -ltesseract55 -lleptonica -lcurl -larchive -ltiff -lwebp -lsharpyuv -lgif -lopenjp2 -lssl -lcrypto -lpng -ljpeg -lz -lbz2 -llzma -llz4 -lzstd -lws2_32 -lbcrypt -lcrypt32 -Wl,--subsystem,windows -m64 
 
 	// with libAlgorithm.a ( ar rcs libAlgorithm.a Algorithm.o TFileManager.o RegExManager.o Sudoku.o Dijkstra.o SortBenchMark.o)
 
-	g++ -std=c++23 -shared -static -static-libgcc -static-libstdc++ -o tesseract.dll tesseractApp.cpp -I"include"  -L"lib" -ltesseract55 -lleptonica -lAlgorithm  -lcurl -larchive -ltiff -lwebp -lsharpyuv -lgif -lopenjp2 -lssl -lcrypto -lpng -ljpeg -lz -lbz2 -llzma -llz4 -lzstd -lws2_32 -lbcrypt -lcrypt32 -Wl,--subsystem,windows -DALGORITHM_EXPORTS -m64 
+	g++ -std=c++23 -shared -static -static-libgcc -static-libstdc++ -o tesseract.dll tesseractDll.cpp -I"include"  -L"lib" -ltesseract55 -lleptonica -lAlgorithm  -lcurl -larchive -ltiff -lwebp -lsharpyuv -lgif -lopenjp2 -lssl -lcrypto -lpng -ljpeg -lz -lbz2 -llzma -llz4 -lzstd -lws2_32 -lbcrypt -lcrypt32 -Wl,--subsystem,windows -DALGORITHM_EXPORTS -m64 
 
 // MAKE (NOT WORKING) 
 

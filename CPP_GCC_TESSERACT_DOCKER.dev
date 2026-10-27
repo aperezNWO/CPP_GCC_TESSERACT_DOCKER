@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=0
 CompilerSettings=0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;8;0;0;0
-UnitCount=25
+UnitCount=27
 
 [VersionInfo]
 Major=1
@@ -128,7 +128,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit9]
-FileName=src\tesseractApp.cpp
+FileName=src\tesseractDll.cpp
 CompileCpp=1
 Folder=src
 Compile=1
@@ -278,6 +278,26 @@ FileName=__test\tessdata\eng.traineddata
 Folder=src/__test/tessdata
 Compile=0
 Link=0
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit26]
+FileName=tesseractApp.cpp
+CompileCpp=1
+Folder=src
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit27]
+FileName=src\Algorithm.cpp
+CompileCpp=1
+Folder=src
+Compile=1
+Link=1
 Priority=1000
 OverrideBuildCmd=0
 BuildCmd=

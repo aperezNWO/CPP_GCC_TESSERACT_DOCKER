@@ -15,13 +15,73 @@ git branch -M main
 git remote add origin https://github.com/aperezNWO/CPP_GCC_TESSERACT_DOCKER.git
 git push -u origin main 
 
+////////////////////////////////////////////////////////////////
+// COMPILATION
+////////////////////////////////////////////////////////////////
+
+	// WINDOWS
+    g++ -std=c++17 -O3 CppWebServer.cpp -o cpp_web_server.exe -mconsole -lws2_32
+    
+    // LINUX DOCKER
+    g++ -std=c++17 -O3 CppWebServer.cpp -I.  -o cpp_web_server -lpthread 
+    
+    	// EDIT DOCKER FILE TO ADD NEEDED FILES
+   			 COPY --from=builder /app/Algorithm.ini /app/Algorithm.ini
+			 COPY --from=builder /app/cpp_web_server /app/cpp_web_server
+        // COPY C++ COMMAND TO DOCKER FILE	
+			 RUN  <COMMAND_LINE>	
+
+////////////////////////////////////////////////////////////////
+// LOCAL TEST
+////////////////////////////////////////////////////////////////
+
+curl.exe http://localhost:8080/health
+
+curl.exe http://localhost:8080/ping
+
+curl.exe http://localhost:8080/getAppVersion
+
+curl.exe http://localhost:8080/getSTDVersion
+
+curl.exe http://localhost:8080/getServerVersion
+
+////////////////////////////////////////////////////////////////
+//  DOCKER
+////////////////////////////////////////////////////////////////
+
+// DOCKER (INIT DOCKER DESKTOP)
+
+# 0  build - (dot included!!!)
+docker build -t cpp_gcc_tesseracet_docker .        
+		      
+# 1. tag - hub.docker.io			   
+docker tag cpp_gcc_tesseracet_docker apereznwogmail/cpp_gcc_tesseracet_docker:latest
+
+# 2. Log in to your Docker Hub account
+docker login
+
+# 3. Push the image to the remote registry
+git 
+
+//////////////////////////////////////////////////////
+// render  / chronjob
+//////////////////////////////////////////////////////
+
+// RENDER 
+-- [_] docker.io/apereznwogmail/cpp_gcc_algorithm_docker:latest
+
+// REMOTE TEST
+-- [_] https://fractal-cpp-server-latest-hh6n.onrender.com/GenerateRandomVertex_CPP?p_vertexSize=9&p_sourcePoint=0
+
+// CHRONJOB
+-- [_] https://fractal-cpp-server-latest-hh6n.onrender.com/zero
 
 ////////////////////////////////////////////////////////////////
 // GIT -- SAVE CHANGES
 ////////////////////////////////////////////////////////////////
 
 git add * 
-git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.0]" -m"1) CppWebServer.cpp main file"
+git commit -m "[CPP_GCC_TESSERACT_DOCKER] - v[1.0.1]" -m"1) CppWebServer.cpp main file / Docker file"
 git push
 git pull	
 

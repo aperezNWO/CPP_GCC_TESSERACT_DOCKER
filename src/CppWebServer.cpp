@@ -31,7 +31,7 @@
 #include <map>
 #include <filesystem>
 
-std::map<std::string, std::string> configMap;
+//std::map<std::string, std::string> configMap;
 
 struct EndpointInfo {
     std::string endpointName;
@@ -50,20 +50,6 @@ std::unordered_map<std::string, EndpointInfo> endpointDictionary = {
     {"TESSERACT_OCR_IMAGE_ENDPOINT"  , {"/api/ocr/getImage"        , "UNITARY TEST"}},       
 };
 
-//
-const char* GetCPPSTDVersion(long int cppVersion)	
-{
-	switch (cppVersion) {
-	        case 199711L: return "C++98/C++03";
-	        case 201103L: return "C++11";
-	        case 201402L: return "C++14";
-	        case 201703L: return "C++17";
-	        case 202002L: return "C++20";
-	        case 202302L: return "C++23";
-	        default: return "Unknown C++ Standard";
-	}
-}
-
 // Get HTTP Server Version (cpp-httplib)
 const char* GetCPPHttpVersion()
 {
@@ -73,52 +59,6 @@ const char* GetCPPHttpVersion()
         return "Unknown cpp-httplib Version";
     #endif
 }
-
-//
-int ReadConfigFile(const char* fileName)
-{
-	 // Open the configuration file
-	std::ifstream configFile(fileName);
-
-	// Check if the file is opened successfully
-	if (!configFile.is_open()) {
-		std::cerr << "Error opening the configuration file." << std::endl;
-		return 1;
-	}
-
-	// Read the file line by line
-	std::string line;
-	while (std::getline(configFile, line)) {
-		// Skip empty lines or lines starting with '#' (comments)
-		if (line.empty() || line[0] == '#') {
-			continue;
-		}
-
-		// Split the line into key and value
-		std::istringstream iss(line);
-		std::string key, value;
-		if (std::getline(iss, key, '=') && std::getline(iss, value))
-		{
-			// Trim leading and trailing whitespaces from key and value
-			key.erase(0, key.find_first_not_of(" \t"));
-			key.erase(key.find_last_not_of(" \t") + 1);
-			value.erase(0, value.find_first_not_of(" \t"));
-			value.erase(value.find_last_not_of(" \t") + 1);
-
-			// Insert key-value pair into the map
-			configMap[key] = value;
-		}
-	}
-
-	// Close the configuration file
-	configFile.close();
-
-	//
-	return 0;
-}	
-
-
-
 
 ////////////////////////////////////////////////////////////
 
@@ -182,21 +122,22 @@ int main(int argc, char* argv[]) {
     
     // Get Standard C++ Version
     svr.Get(endpointDictionary["STD_VERSION_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
-    		std::string jsonResponse  = GetCPPSTDVersion(__cplusplus); 
-            res.set_content(jsonResponse, "application/json");
+		 	//
+	        std::unique_ptr<Algorithm> uniquePtr = std::make_unique<Algorithm>(true);   
+    		//
+			std::string jsonResponse             = uniquePtr->GetCPPSTDVersion(__cplusplus); 
+            //
+			res.set_content(jsonResponse, "application/json");
             res.status = 200;
     });
     
         
     // Get Application Version
     svr.Get(endpointDictionary["APP_VERSION_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
-    	
     		//
-			ReadConfigFile("tesseract.ini");
-
+ 	        std::unique_ptr<Algorithm> uniquePtr = std::make_unique<Algorithm>(true);   
 			//
-    		std::string jsonResponse  = configMap["DLL_VERSION"]; 
-    		
+    		std::string jsonResponse  = uniquePtr->configMap["DLL_VERSION"]; 
     		//
             res.set_content(jsonResponse, "application/json");
             res.status = 200;

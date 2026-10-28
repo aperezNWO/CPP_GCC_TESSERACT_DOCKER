@@ -31,27 +31,66 @@
 #include <map>
 #include <filesystem>
 
-//std::map<std::string, std::string> configMap;
+//////////////////////////////////////////////////////////////////////
+// CLASS DECLARATION
+//////////////////////////////////////////////////////////////////////
 
-struct EndpointInfo {
-    std::string endpointName;
-    std::string endpointDescription;
+class CppWebServerApp
+{
+	//
+	public :
+		//
+		struct EndpointInfo {
+		    std::string endpointName;
+		    std::string endpointDescription;
+		};
+		//
+		std::unordered_map<std::string, EndpointInfo> endpointDictionary;
+		//
+	    httplib::Server svr;
+	    //
+	    const char* cppWebServerVersion;
+    //
+    public :
+		//
+		CppWebServerApp();
+		//
+		~CppWebServerApp();	
+		//
+		static const char* GetCPPHttpVersion();
+    	//
+    	int Run();
+    
 };
 
-// Key is a string identifier (e.g., "HEALTH_ENDPOINT")
-std::unordered_map<std::string, EndpointInfo> endpointDictionary = {
-    {"HEALTH_ENDPOINT"            , {"/health"                     , "Print all endpoints"}},
-    {"PING_ENDPOINT"              , {"/zero"                       , "Render workaround"}},
-    {"APP_VERSION_ENDPOINT"       , {"/getAppVersion"              , "Get Application Version"}},
-    {"STD_VERSION_ENDPOINT"       , {"/getSTDVersion"              , "Get Standard C++ Version"}},
-    {"SERVER_VERSION_ENDPOINT"    , {"/getServerVersion"           , "Get Http Server Version"}},
-    {"TESSERACT_VERSION_ENDPOINT"    , {"/api/ocr/getAPIVersion"   , "Get Tesseract API Version"}},
-    {"TESSERACT_UPLOAD_ENDPOINT"     , {"/api/ocr/upload"          , "Upload image from html form via HTTP POST"}},    
-    {"TESSERACT_OCR_IMAGE_ENDPOINT"  , {"/api/ocr/getImage"        , "UNITARY TEST"}},       
-};
+//////////////////////////////////////////////////////////////////////
+// CLASS IMPLEMENTATION
+//////////////////////////////////////////////////////////////////////
 
-// Get HTTP Server Version (cpp-httplib)
-const char* GetCPPHttpVersion()
+//
+CppWebServerApp::CppWebServerApp()
+{	
+	//
+	this->endpointDictionary = {
+	    {"HEALTH_ENDPOINT"            , {"/health"                     , "Print all endpoints"}},
+	    {"PING_ENDPOINT"              , {"/zero"                       , "Render workaround"}},
+	    {"APP_VERSION_ENDPOINT"       , {"/getAppVersion"              , "Get Application Version"}},
+	    {"STD_VERSION_ENDPOINT"       , {"/getSTDVersion"              , "Get Standard C++ Version"}},
+	    {"SERVER_VERSION_ENDPOINT"    , {"/getServerVersion"           , "Get Http Server Version"}},
+	    {"TESSERACT_VERSION_ENDPOINT"    , {"/api/ocr/getAPIVersion"   , "Get Tesseract API Version"}},
+	    {"TESSERACT_UPLOAD_ENDPOINT"     , {"/api/ocr/upload"          , "Upload image from html form via HTTP POST"}},    
+	    {"TESSERACT_OCR_IMAGE_ENDPOINT"  , {"/api/ocr/getImage"        , "UNITARY TEST"}},       
+	};
+	//
+	this->cppWebServerVersion = this->GetCPPHttpVersion();
+}
+//
+CppWebServerApp::~CppWebServerApp()
+{	
+	//
+}
+//
+const char* CppWebServerApp::GetCPPHttpVersion()
 {
     #ifdef CPPHTTPLIB_VERSION
         return CPPHTTPLIB_VERSION;
@@ -59,23 +98,18 @@ const char* GetCPPHttpVersion()
         return "Unknown cpp-httplib Version";
     #endif
 }
-
-////////////////////////////////////////////////////////////
-
-int main(int argc, char* argv[]) {
-
-	//
-    httplib::Server svr;
-
-    // HTTP Interceptor & Global CORS Middleware
+//
+int CppWebServerApp::Run()
+{
+	// HTTP Interceptor & Global CORS Middleware
     svr.set_pre_routing_handler([](const httplib::Request& req, httplib::Response& res) {
         // 1. Request Logging Interceptor
         std::cout << "[Interceptor] " << req.method << " " << req.path << std::endl;
 
         // 2. Global CORS Header Policy
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept, Authorization");
+        res.set_header("Access-Control-Allow-Origin"     , "*");
+        res.set_header("Access-Control-Allow-Methods"    , "GET, POST, PUT, DELETE, OPTIONS");
+        res.set_header("Access-Control-Allow-Headers"    , "Origin, Content-Type, Accept, Authorization");
         res.set_header("Access-Control-Allow-Credentials", "true");
 
         // 3. Handle browser preflight OPTIONS requests automatically
@@ -88,7 +122,7 @@ int main(int argc, char* argv[]) {
         return httplib::Server::HandlerResponse::Unhandled;
     });
     
-      // Ping / Zero Endpoint
+       // Ping / Zero Endpoint
     svr.Get(endpointDictionary["PING_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
         res.status = 204;
     });
@@ -157,15 +191,15 @@ int main(int argc, char* argv[]) {
     
 	// Get Http Server Version
     svr.Get(endpointDictionary["SERVER_VERSION_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
-    		std::string jsonResponse  = GetCPPHttpVersion();
+    		//
+			std::string jsonResponse  = CppWebServerApp::GetCPPHttpVersion();
             res.set_content(jsonResponse, "application/json");
             res.status = 200;
     });
     
     // UNIT TEST 
     svr.Get(endpointDictionary["TESSERACT_OCR_IMAGE_ENDPOINT"].endpointName.c_str(), [](const httplib::Request&, httplib::Response& res) {
-    		
-	    //
+   	    //
 	    std::unique_ptr<TesseractApp> uniquePtr = std::make_unique<TesseractApp>();
 		
 		//
@@ -204,8 +238,25 @@ int main(int argc, char* argv[]) {
         port = std::stoi(getenv("PORT"));
     }
 
+	//
     std::cout << "C++ REST Server listening on port " << port << "...\n";
     svr.listen("0.0.0.0", port);
 
+	//
+	return 0;
+};
+
+////////////////////////////////////////////////////////////
+// MAIN PROGRAM ENTRY
+////////////////////////////////////////////////////////////
+
+int main(int argc, char* argv[]) {
+	//
+	CppWebServerApp* app = new CppWebServerApp();
+	
+	//
+	app->Run();
+	
+	//
     return 0;
 }

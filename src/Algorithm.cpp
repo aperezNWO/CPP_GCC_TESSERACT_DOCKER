@@ -146,12 +146,16 @@
 	//
 	const char* Algorithm::GetCPPSTDVersion(long int cppVersion)	
 	{
+		//
+		cout << "cpp Version short : " << cppVersion << endl;
+		//
 		switch (cppVersion) {
 		        case 199711L: return "C++98/C++03";
 		        case 201103L: return "C++11";
 		        case 201402L: return "C++14";
 		        case 201703L: return "C++17";
 		        case 202002L: return "C++20";
+			    case 202100L: return "C++23 Prerelase";
 		        case 202302L: return "C++23";
 		        default: return "Unknown C++ Standard";
 		}

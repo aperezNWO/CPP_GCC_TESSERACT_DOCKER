@@ -252,10 +252,18 @@ int CppWebServerApp::Run()
 
 int main(int argc, char* argv[]) {
 	//
-	CppWebServerApp* app = new CppWebServerApp();
+	try
+	{
+		//
+		CppWebServerApp* app = new CppWebServerApp();
 	
-	//
-	app->Run();
+		//
+		app->Run();
+	} 
+	catch(exception &e)
+	{
+		cout << "Error occurred : [" << e.what() << "]" << endl;
+ 	}
 	
 	//
     return 0;

@@ -157,14 +157,15 @@
 		        case 202002L: return "C++20";
 			    case 202100L: return "C++23 Prerelase";
 		        case 202302L: return "C++23";
-		        default: return "Unknown C++ Standard";
+		        default: {
+		        	if ((cppVersion >   202100L)
+		        	     && 
+					    (cppVersion <=  202302L))
+					return "C++23 Prerelease";
+		        	
+		        	return "Unknown C++ Standard";
+					break;
+				}
 		}
 	}
-
-	///////////////////////////////////////////////////////////////////////////
-	// MAIN ENTRY POINT
-	///////////////////////////////////////////////////////////////////////////
-
-
-
 	///////////////////////////////////////////////////////////////////////////

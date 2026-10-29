@@ -290,8 +290,10 @@ int CppWebServerApp::Run()
 			sanitizedMessage.erase(std::remove(sanitizedMessage.begin(), sanitizedMessage.end(), '\n'), sanitizedMessage.end());
 			sanitizedMessage.erase(std::remove(sanitizedMessage.begin(), sanitizedMessage.end(), '\r'), sanitizedMessage.end());
 			
+			//
 			sanitizedMessage             = "Text from C++ (httplib) : " + sanitizedMessage;
-
+			cout << "[" <<sanitizedMessage << "]" << endl;
+			
 			// final response			
 			std::string jsonResponse = "{\n  \"message\": \"" + sanitizedMessage + "\",\n  \"status\": \"ok\",\n  \"data\": \"" + savedPath + "\"\n}";
 			res.set_content(jsonResponse, "application/json");

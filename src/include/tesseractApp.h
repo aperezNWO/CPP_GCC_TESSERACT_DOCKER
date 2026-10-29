@@ -40,10 +40,6 @@ class TesseractApp
         const char*  GetTesseractOcrOutputPath(const char* imagePath);
         const char*  GetTesseractVersion();
         const char*  GetTesseractAppVersion(); 
-        //
-        //int          ReadConfigFile();
      public :
         //
-        //map<string, string> configMap;
-
 };

@@ -23,10 +23,16 @@ RUN apt-get update && apt-get install -y \
     tesseract-ocr-eng \
     && rm -rf /var/lib/apt/lists/*
 
+# Copy runtime binaries and config files
 COPY --from=builder /app/tesseract.ini  /app/tesseract.ini
 COPY --from=builder /app/cpp_web_server /app/cpp_web_server
 COPY --from=builder /app/input.png      /app/input.png
-COPY --from=builder /app/tessdata/eng.traineddata /app/tessdata/eng.traineddata
+
+# Copy the entire tessdata directory correctly
+COPY --from=builder /app/tessdata       /app/tessdata
+
+# Explicitly tell Tesseract where to find trained data files
+ENV TESSDATA_PREFIX=/app/tessdata
 
 EXPOSE 8080
 CMD ["./cpp_web_server"]

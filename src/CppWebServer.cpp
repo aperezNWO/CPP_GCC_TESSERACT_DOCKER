@@ -30,6 +30,7 @@
 #include <unordered_map>
 #include <map>
 #include <filesystem>
+#include <fstream>
 
 //////////////////////////////////////////////////////////////////////
 // CLASS DECLARATION
@@ -64,6 +65,49 @@ class CppWebServerApp
 };
 
 //////////////////////////////////////////////////////////////////////
+// HELPER METHODS
+//////////////////////////////////////////////////////////////////////
+
+// Simple Base64 decoder function
+std::vector<unsigned char> base64_decode(const std::string& in) {
+    static const std::string chars = 
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::vector<unsigned char> out;
+    int val = 0, valb = -6;
+    for (unsigned char c : in) {
+        if (c == '=') break;
+        size_t index = chars.find(c);
+        if (index == std::string::npos) continue;
+        val = (val << 6) + index;
+        valb += 6;
+        if (valb >= 0) {
+            out.push_back(static_cast<unsigned char>((val >> valb) & 0xFF));
+            valb -= 8;
+        }
+    }
+    return out;
+}
+
+// Lightweight JSON field extractor for "base64Image"
+std::string extractJsonField(const std::string& json, const std::string& key) {
+    std::string searchKey = "\"" + key + "\":";
+    size_t pos = json.find(searchKey);
+    if (pos == std::string::npos) return "";
+    pos += searchKey.length();
+    
+    // Skip whitespace
+    while (pos < json.length() && (json[pos] == ' ' || json[pos] == '\t' || json[pos] == '\n' || json[pos] == '\r')) {
+        pos++;
+    }
+    if (pos >= json.length() || json[pos] != '"') return "";
+    pos++; // skip opening quote
+    
+    size_t endPos = json.find('"', pos);
+    if (endPos == std::string::npos) return "";
+    return json.substr(pos, endPos - pos);
+}
+
+//////////////////////////////////////////////////////////////////////
 // CLASS IMPLEMENTATION
 //////////////////////////////////////////////////////////////////////
 
@@ -79,7 +123,7 @@ CppWebServerApp::CppWebServerApp()
 	    {"SERVER_VERSION_ENDPOINT"    , {"/getServerVersion"           , "Get Http Server Version"}},
 	    {"TESSERACT_VERSION_ENDPOINT"    , {"/api/ocr/getAPIVersion"   , "Get Tesseract API Version"}},
 	    {"TESSERACT_UPLOAD_ENDPOINT"     , {"/api/ocr/upload"          , "Upload image from html form via HTTP POST"}},    
-	    {"TESSERACT_OCR_IMAGE_ENDPOINT"  , {"/api/ocr/getImage"        , "UNITARY TEST"}},       
+	    {"TESSERACT_OCR_IMAGE_ENDPOINT"  , {"/api/ocr/getImage"        , "UNIT TESTING"}},       
 	};
 	//
 	this->cppWebServerVersion = this->GetCPPHttpVersion();
@@ -209,30 +253,61 @@ int CppWebServerApp::Run()
     });
     
 	// UPLOAD IMAGE FROM HTML FORM VIA POST
-    svr.Post("TESSERACT_UPLOAD_ENDPOINT", [](const httplib::Request& req, httplib::Response& res) {
+	svr.Post(endpointDictionary["TESSERACT_UPLOAD_ENDPOINT"].endpointName.c_str(), [](const httplib::Request& req, httplib::Response& res) {
+	    
 	    if (req.body.empty()) {
 	        res.status = 400;
-	        res.set_content("{\"error\": \"No image data received\"}", "application/json");
+	        res.set_content("{\"error\": \"No data received\"}", "application/json");
 	        return;
 	    }
 	
-	    // req.body holds the raw binary bytes of the uploaded image
-	    std::string savedPath = "/app/uploaded_image.png"; 
-	    std::ofstream outfile(savedPath, std::ios::binary);
-	    outfile.write(req.body.data(), req.body.size());
-	    outfile.close();
-	
-	    // Pass savedPath using .c_str() to match const char*
-	    std::unique_ptr<TesseractApp> uniquePtr = std::make_unique<TesseractApp>();
+	    try {
 	    
-	    // Convert std::string to const char* via .c_str() and capture result
-	    std::string jsonResponse = uniquePtr->GetTesseractOcrOutputPath(savedPath.c_str());
+			// Cross-platform path management (Windows vs Docker Linux container)
+			#ifdef _WIN32
+			    std::string savedPath = "uploaded_image.png";
+			#else
+			    std::string savedPath = "/app/uploaded_image.png";
+			#endif
+
+	  	    std::cout << "loading image on path [" << savedPath  << "]" << std::endl;
+			  		    
+		    std::ofstream outfile(savedPath, std::ios::binary);
+		    outfile.write(req.body.data(), req.body.size());
+		    outfile.close();
 	    
-        res.set_content(jsonResponse, "application/json");
-        res.status = 200;
+	    	const char * savedPath_cstr = savedPath.c_str();
+			 
+	    	std::cout << "Processing upload on path [" << savedPath_cstr << "]" << std::endl;
+	        
+			std::unique_ptr<TesseractApp> uniquePtr = std::make_unique<TesseractApp>();
+	        std::string message     = uniquePtr->GetTesseractOcrOutputPath(savedPath_cstr);
+	        
+	        // Sanitize the Tesseract message to remove or escape raw newlines
+			std::string sanitizedMessage = message;
+			
+			// Remove newlines/carriage returns entirely
+			sanitizedMessage.erase(std::remove(sanitizedMessage.begin(), sanitizedMessage.end(), '\n'), sanitizedMessage.end());
+			sanitizedMessage.erase(std::remove(sanitizedMessage.begin(), sanitizedMessage.end(), '\r'), sanitizedMessage.end());
+			
+			sanitizedMessage             = "Text from C++ (httplib) : " + sanitizedMessage;
+
+			// final response			
+			std::string jsonResponse = "{\n  \"message\": \"" + sanitizedMessage + "\",\n  \"status\": \"ok\",\n  \"data\": \"" + savedPath + "\"\n}";
+			res.set_content(jsonResponse, "application/json");
+			res.status = 200;
+	        
+	    } catch (const std::exception& e) {
+	        std::cout << "Tesseract Exception: " << e.what() << std::endl;
+	        res.status = 500;
+	        res.set_content("{\"error\": \"OCR processing failed\"}", "application/json");
+	    } catch (...) {
+	        std::cout << "Unknown Tesseract Crash/Exception" << std::endl;
+	        res.status = 500;
+	        res.set_content("{\"error\": \"Unknown OCR failure\"}", "application/json");
+	    }
 	});
-	
-	//
+		//
     int port = 8080;
     if (getenv("PORT")) {
         port = std::stoi(getenv("PORT"));

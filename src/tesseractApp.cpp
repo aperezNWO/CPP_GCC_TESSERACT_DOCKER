@@ -93,36 +93,49 @@ const char* TesseractApp::GetTesseractOcrOutput()
 //
 const char* TesseractApp::GetTesseractOcrOutputPath(const char* imagePath)
 {
-   //
-   static std::string output;
-   //
-   tesseract::TessBaseAPI ocr;
+	std::cout << "[Tesseract]  Invoking function..." << std::endl;
+    
+	static std::string output = "";
+    
+	try
+    {
+	    std::cout << "[Tesseract] Initializing API..." << std::endl;
+	    tesseract::TessBaseAPI ocr;
+	
+	    std::cout << "[Tesseract] Loading tessdata from folder..." << std::endl;
+	    if (ocr.Init("tessdata", "eng")) {
+	        output = "Could not initialize tesseract (tessdata missing?).";
+	        std::cout << "[Tesseract] ERROR: Init failed!" << std::endl;
+	        return output.c_str();
+	    }
+	
+	    std::cout << "[Tesseract] Reading image file: " << imagePath << std::endl;
+	    Pix* image = pixRead(imagePath);
+	    if (!image) {
+	        output = "Could not open image via Leptonica.";
+	        std::cout << "[Tesseract] ERROR: pixRead failed!" << std::endl;
+	        return output.c_str();
+	    }
+	
+	    std::cout << "[Tesseract] Running OCR recognition..." << std::endl;
+	    ocr.SetImage(image);
+	    char* result = ocr.GetUTF8Text();
+	
+	    output = result ? result : "No output.";
+	    
+	    std::cout << "[Tesseract] Cleaning up resources..." << std::endl;
+	    delete[] result;
+	    pixDestroy(&image);
+	    ocr.End();
+	
+	    std::cout << "[Tesseract] Done successfully." << std::endl;	
+	} 
+	catch(exception &e)
+	{
+		cout << "Error occured on Tesseract : [" << e.what() << "]" << endl;
+	}
 
-   //
-   if (ocr.Init("tessdata", "eng")) {
-       output = "Could not initialize tesseract.";
-       return output.c_str();
-   }
-
-   //
-   Pix* image = pixRead(imagePath);
-   if (!image) {
-       output = "Could not open image.";
-       return output.c_str();
-   }
-
-   //
-   ocr.SetImage(image);
-   char* result = ocr.GetUTF8Text();
-
-   //
-   output = result ? result : "No output.";
-   delete[] result;
-   pixDestroy(&image);
-   ocr.End();
-
-   //
-   return output.c_str();
+    return output.c_str();
 }
 //
 const char*  TesseractApp::GetTesseractVersion()
